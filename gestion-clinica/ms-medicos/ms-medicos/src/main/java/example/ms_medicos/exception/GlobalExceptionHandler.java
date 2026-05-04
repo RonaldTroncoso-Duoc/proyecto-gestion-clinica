@@ -1,4 +1,4 @@
-package example.ms_pacientes.exception;
+package example.ms_medicos.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     // 1. Captura la excepción específica del Microservicio (Paciente, Medico o Usuario)
-    @ExceptionHandler({PacienteNotFoundException.class, PacienteNotFoundException.class}) 
+    @ExceptionHandler({MedicoNotFoundException.class, MedicoNotFoundException.class}) 
     public ResponseEntity<Object> handleNotFound(RuntimeException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND, "Recurso No Encontrado");
     }
