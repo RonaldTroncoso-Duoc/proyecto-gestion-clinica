@@ -1,62 +1,75 @@
 package example.ms_especialidades.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import example.ms_especialidades.model.Especialidad;
+import example.ms_especialidades.dto.EspecialidadRequestDTO;
+import example.ms_especialidades.dto.EspecialidadResponseDTO;
 import example.ms_especialidades.service.EspecialidadService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/especialidades")
+@RequiredArgsConstructor
+@Slf4j
 public class EspecialidadController {
 
-    @Autowired
-    private EspecialidadService service;
-    
+    private final EspecialidadService service;
+
     @GetMapping
-    public List<Especialidad> listarTodas() {
-        return service.listarTodas();
+    public ResponseEntity<List<EspecialidadResponseDTO>> listarTodas() {
+        log.info("GET /api/especialidades");
+        return ResponseEntity.ok(service.listarTodas());
     }
 
     @GetMapping("/activas")
-    public List<Especialidad> listarActivas() {
-        return service.listarActivas();
+    public ResponseEntity<List<EspecialidadResponseDTO>> listarActivas() {
+        log.info("GET /api/especialidades/activas");
+        return ResponseEntity.ok(service.listarActivas());
     }
 
     @GetMapping("/{id}")
-    public Especialidad obtenerPorId(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public ResponseEntity<EspecialidadResponseDTO> buscarPorId(@PathVariable Long id) {
+        log.info("GET /api/especialidades/{}", id);
+        return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @PostMapping
-    public Especialidad crear(@Valid @RequestBody Especialidad especialidad) {
-        return service.guardar(especialidad);
+    public ResponseEntity<EspecialidadResponseDTO> crear(@Valid @RequestBody EspecialidadRequestDTO dto) {
+        log.info("POST /api/especialidades");
+        EspecialidadResponseDTO response = service.crear(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public Especialidad actualizar(@PathVariable Long id, @Valid @RequestBody Especialidad especialidad) {
-        return service.actualizar(id, especialidad);
+    public ResponseEntity<EspecialidadResponseDTO> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody EspecialidadRequestDTO dto
+    ) {
+        log.info("PUT /api/especialidades/{}", id);
+        return ResponseEntity.ok(service.actualizar(id, dto));
     }
 
-    @PutMapping("/{id}/desactivar")
-    public Especialidad desactivar(@PathVariable Long id) {
-        return service.desactivar(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        log.info("DELETE /api/especialidades/{}", id);
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/activar")
-    public Especialidad activar(@PathVariable Long id) {
-        return service.activar(id);
+    @PatchMapping("/{id}/activar")
+    public ResponseEntity<EspecialidadResponseDTO> activar(@PathVariable Long id) {
+        log.info("PATCH /api/especialidades/{}/activar", id);
+        return ResponseEntity.ok(service.activar(id));
     }
-    
 
+    @PatchMapping("/{id}/desactivar")
+    public ResponseEntity<EspecialidadResponseDTO> desactivar(@PathVariable Long id) {
+        log.info("PATCH /api/especialidades/{}/desactivar", id);
+        return ResponseEntity.ok(service.desactivar(id));
+    }
 }

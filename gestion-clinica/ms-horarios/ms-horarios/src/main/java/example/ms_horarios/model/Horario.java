@@ -40,6 +40,7 @@ public class Horario {
     @Column(nullable = false)
     private LocalTime horaTermino;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean disponible = true;
 

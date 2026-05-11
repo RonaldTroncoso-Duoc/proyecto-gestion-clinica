@@ -1,5 +1,6 @@
 package example.ms_especialidades.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,28 +12,36 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EspecialidadNotFoundException.class)
-    public ResponseEntity<Object> handleNotFound(EspecialidadNotFoundException ex) {
+    public ResponseEntity<Object> handleEspecialidadNotFound(EspecialidadNotFoundException ex) {
+        log.warn("Recurso no encontrado: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND, "Especialidad No Encontrada");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException ex) {
         String mensaje = ex.getBindingResult().getFieldError().getDefaultMessage();
+        log.warn("Error de validación: {}", mensaje);
         return buildResponse(mensaje, HttpStatus.BAD_REQUEST, "Error de Validación");
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRuntime(RuntimeException ex) {
+        log.warn("Error de negocio: {}", ex.getMessage());
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, "Error de Negocio");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGlobal(Exception ex) {
-        return buildResponse("Ocurrió un error interno en el servidor",
-                HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        log.error("Error interno no controlado", ex);
+        return buildResponse(
+                "Ocurrió un error interno en el servidor",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage()
+        );
     }
 
     private ResponseEntity<Object> buildResponse(String message, HttpStatus status, String error) {
@@ -41,6 +50,7 @@ public class GlobalExceptionHandler {
         body.put("status", status.value());
         body.put("error", error);
         body.put("message", message);
+
         return new ResponseEntity<>(body, status);
     }
 }

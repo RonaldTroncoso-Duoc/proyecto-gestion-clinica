@@ -1,59 +1,25 @@
 package example.ms_especialidades.service;
 
+import example.ms_especialidades.dto.EspecialidadRequestDTO;
+import example.ms_especialidades.dto.EspecialidadResponseDTO;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+public interface EspecialidadService {
 
-import example.ms_especialidades.exception.EspecialidadNotFoundException;
-import example.ms_especialidades.model.Especialidad;
-import example.ms_especialidades.repository.EspecialidadRepository;
+    List<EspecialidadResponseDTO> listarTodas();
 
-@Service
-public class EspecialidadService {
+    List<EspecialidadResponseDTO> listarActivas();
 
-    @Autowired
-    private EspecialidadRepository repository;
+    EspecialidadResponseDTO buscarPorId(Long id);
 
-    public List<Especialidad> listarTodas() {
-        return repository.findAll();
-    }
-    
-    public List<Especialidad> listarActivas() {
-        return repository.findByActivoTrue();
-    }
+    EspecialidadResponseDTO crear(EspecialidadRequestDTO dto);
 
-    public Especialidad buscarPorId(Long id) {
-        return repository.findById(id).orElseThrow(() 
-        -> new EspecialidadNotFoundException("Especialidad con ID " + id + " no encontrada"));
-    }
+    EspecialidadResponseDTO actualizar(Long id, EspecialidadRequestDTO dto);
 
-    public Especialidad guardar(Especialidad especialidad) {
-        if (repository.existsByNombre(especialidad.getNombre())) {
-            throw new RuntimeException("Ya existe una especialidad con ese nombre");
-        }
-        especialidad.setActivo(true);
-        return repository.save(especialidad);
-    }
+    void eliminar(Long id);
 
-    public Especialidad actualizar(Long id, Especialidad datos) {
-        Especialidad especialidad = buscarPorId(id);
+    EspecialidadResponseDTO activar(Long id);
 
-        especialidad.setNombre(datos.getNombre());
-        especialidad.setDescripcion(datos.getDescripcion());
-        return repository.save(especialidad);
-    }
-
-    public Especialidad desactivar(Long id) {
-        Especialidad especialidad = buscarPorId(id);
-        especialidad.setActivo(false);
-        return repository.save(especialidad);
-    }
-
-    public Especialidad activar(Long id) {
-        Especialidad especialidad = buscarPorId(id);
-        especialidad.setActivo(true);
-        return repository.save(especialidad);
-    }
-
+    EspecialidadResponseDTO desactivar(Long id);
 }
