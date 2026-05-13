@@ -1,39 +1,27 @@
 package example.ms_pacientes.service;
 
-import example.ms_pacientes.exception.PacienteNotFoundException;
-import example.ms_pacientes.model.Paciente;
-import example.ms_pacientes.repository.PacienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import example.ms_pacientes.dto.PacienteRequestDTO;
+import example.ms_pacientes.dto.PacienteResponseDTO;
 
 import java.util.List;
 
-@Service
-public class PacienteService {
+public interface PacienteService {
 
-    @Autowired
-    private PacienteRepository pacienteRepository;
+    List<PacienteResponseDTO> listarTodos();
 
-    public List<Paciente> listarTodos() {
-        return pacienteRepository.findAll();
-    }
+    List<PacienteResponseDTO> listarActivos();
 
-    public Paciente guardar(Paciente paciente) {
-        return pacienteRepository.save(paciente);
-    }
+    PacienteResponseDTO buscarPorId(Long id);
 
-    public Paciente buscarPorId(Long id) {
-        return pacienteRepository.findById(id)
-                .orElseThrow(() -> new PacienteNotFoundException("Paciente con ID " + id + " no encontrado"));
-    }
+    PacienteResponseDTO buscarPorRun(String run);
 
-    public Paciente buscarPorRut(String rut) {
-        return pacienteRepository.findByRut(rut)
-                .orElseThrow(() -> new PacienteNotFoundException("Paciente con RUT " + rut + " no encontrado"));
-    }
+    PacienteResponseDTO crear(PacienteRequestDTO dto);
 
-    public void eliminar(Long id) {
-        Paciente p = buscarPorId(id);
-        pacienteRepository.delete(p);
-    }
+    PacienteResponseDTO actualizar(Long id, PacienteRequestDTO dto);
+
+    void eliminar(Long id);
+
+    PacienteResponseDTO activar(Long id);
+
+    PacienteResponseDTO desactivar(Long id);
 }
