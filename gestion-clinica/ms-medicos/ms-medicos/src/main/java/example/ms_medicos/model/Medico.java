@@ -1,7 +1,6 @@
 package example.ms_medicos.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 
 @Entity
@@ -11,19 +10,30 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Medico {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre es obligatorio")
+    @Column(nullable = false, unique = true)
+    private String run;
+
+    @Column(nullable = false, length = 120)
     private String nombre;
 
-    @NotBlank(message = "La especialidad es obligatoria")
-    private String especialidad;
+    @Column(nullable = false, length = 120)
+    private String apellido;
 
-    @NotBlank(message = "El correo es obligatorio")
-    @Email
+    @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    private boolean activo = true; // Para saber si el médico está atendiendo
+    @Column(nullable = false, length = 20)
+    private String telefono;
+
+    @Column(nullable = false)
+    private Long especialidadId;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean activo = true;
 }

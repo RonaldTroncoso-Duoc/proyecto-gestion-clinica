@@ -1,21 +1,29 @@
 package example.ms_medicos.service;
 
-import example.ms_medicos.exception.MedicoNotFoundException;
-import example.ms_medicos.model.Medico;
-import example.ms_medicos.repository.MedicoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
-public class MedicoService {
-    @Autowired
-    private MedicoRepository repository;
+import example.ms_medicos.dto.MedicoRequestDTO;
+import example.ms_medicos.dto.MedicoResponseDTO;
 
-    public List<Medico> listarTodos() { return repository.findAll(); }
-    public Medico guardar(Medico medico) { return repository.save(medico); }
-    public Medico buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new MedicoNotFoundException("Médico no encontrado"));
-    }
+public interface MedicoService {
+    
+    List<MedicoResponseDTO> listarTodos();
+
+    List<MedicoResponseDTO> listarActivos();
+
+    MedicoResponseDTO buscarPorId(Long id);
+
+    List<MedicoResponseDTO> buscarPorEspecialidad(Long especialidadId);
+
+    List<MedicoResponseDTO> buscarActivosPorEspecialidad(Long especialidadId);
+
+    MedicoResponseDTO crear(MedicoRequestDTO dto);
+
+    MedicoResponseDTO actualizar(Long id, MedicoRequestDTO dto);
+
+    void eliminar(Long id);
+
+    MedicoResponseDTO activar(Long id);
+
+    MedicoResponseDTO desactivar(Long id);
 }
