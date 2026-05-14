@@ -1,15 +1,10 @@
 package example.ms_horarios.model;
 
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "horarios")
@@ -23,25 +18,19 @@ public class Horario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "El ID del médico es obligatorio")
     @Column(nullable = false)
     private Long medicoId;
 
-    @NotNull(message = "La fecha es obligatoria")
     @Column(nullable = false)
-    @FutureOrPresent(message = "La fecha debe ser desde hoy")
     private LocalDate fecha;
 
-    @NotNull(message = "La hora de inicio es obligatoria")
     @Column(nullable = false)
     private LocalTime horaInicio;
 
-    @NotNull(message = "La hora de término es obligatoria")
     @Column(nullable = false)
-    private LocalTime horaTermino;
+    private LocalTime horaFin;
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean disponible = true;
-
+    private Boolean disponible = true;
 }
