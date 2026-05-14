@@ -66,15 +66,15 @@ public class HorarioController {
         return ResponseEntity.ok(service.actualizar(id, dto));
     }
 
-    @PatchMapping("/{id}/ocupar")
+    @PutMapping("/{id}/ocupar")
     public ResponseEntity<HorarioResponseDTO> ocupar(@PathVariable Long id) {
-        log.info("PATCH /api/horarios/{}/ocupar", id);
+        log.info("PUT /api/horarios/{}/ocupar", id);
         return ResponseEntity.ok(service.ocupar(id));
     }
 
-    @PatchMapping("/{id}/liberar")
+    @PutMapping("/{id}/liberar")
     public ResponseEntity<HorarioResponseDTO> liberar(@PathVariable Long id) {
-        log.info("PATCH /api/horarios/{}/liberar", id);
+        log.info("PUT /api/horarios/{}/liberar", id);
         return ResponseEntity.ok(service.liberar(id));
     }
 

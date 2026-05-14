@@ -1,36 +1,29 @@
 package example.ms_citas.service;
 
-import example.ms_citas.client.MedicoClient;
-import example.ms_citas.client.PacienteClient;
-import example.ms_citas.model.Cita;
-import example.ms_citas.repository.CitaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import example.ms_citas.dto.CitaRequestDTO;
+import example.ms_citas.dto.CitaResponseDTO;
 
 import java.util.List;
 
-@Service
-public class CitaService {
+public interface CitaService {
 
-    @Autowired 
-    private CitaRepository repository;
+    List<CitaResponseDTO> listarTodas();
 
-    @Autowired 
-    private PacienteClient pacienteClient;
+    List<CitaResponseDTO> listarPorPaciente(Long pacienteId);
 
-    @Autowired 
-    private MedicoClient medicoClient;
+    List<CitaResponseDTO> listarPorMedico(Long medicoId);
 
-    public List<Cita> listarTodas() {
-        return repository.findAll();
-    }
+    List<CitaResponseDTO> listarPorEstado(String estado);
 
-    public Cita agendarCita(Cita cita) {
-        // Estas llamadas usan Feign para verificar que existan en los otros MS
-        // Si no existen, Feign lanzará una excepción (puedes mejorar esto con un Try/Catch)
-        pacienteClient.obtenerPaciente(cita.getPacienteId());
-        medicoClient.obtenerMedico(cita.getMedicoId());
-        
-        return repository.save(cita);
-    }
+    CitaResponseDTO buscarPorId(Long id);
+
+    CitaResponseDTO crear(CitaRequestDTO dto);
+
+    CitaResponseDTO actualizar(Long id, CitaRequestDTO dto);
+
+    CitaResponseDTO cancelar(Long id);
+
+    CitaResponseDTO realizar(Long id);
+
+    void eliminar(Long id);
 }
