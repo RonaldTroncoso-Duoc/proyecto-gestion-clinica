@@ -1,38 +1,20 @@
 package example.ms_auth.service;
 
-import example.ms_auth.model.Usuario;
-import example.ms_auth.repository.UsuarioRepository;
-import example.ms_auth.util.JwtUtils; // Importamos la utilidad
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import example.ms_auth.dto.request.ChangePasswordDTO;
+import example.ms_auth.dto.request.LoginRequestDTO;
+import example.ms_auth.dto.request.RegisterRequestDTO;
+import example.ms_auth.dto.response.AuthResponseDTO;
+import example.ms_auth.dto.response.UserProfileDTO;
+import example.ms_auth.dto.response.UserResponseDTO;
 
-@Service
-public class AuthService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+public interface AuthService {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    AuthResponseDTO login(LoginRequestDTO request);
 
-    @Autowired
-    private JwtUtils jwtUtils; // Inyectamos la fábrica de tokens
+    UserResponseDTO register(RegisterRequestDTO request);
 
-    public Usuario registrar(Usuario usuario) {
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        return usuarioRepository.save(usuario);
-    }
+    UserProfileDTO getProfile(String username);
 
-    public String login(String username, String password) {
-        Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (passwordEncoder.matches(password, usuario.getPassword())) {
-            // Retornamos el TOKEN en lugar de un simple mensaje
-            return jwtUtils.generarToken(usuario.getUsername(), usuario.getRol());
-        } else {
-            throw new RuntimeException("Contraseña incorrecta");
-        }
-    }
+    void changePassword(String username, ChangePasswordDTO request);
 }

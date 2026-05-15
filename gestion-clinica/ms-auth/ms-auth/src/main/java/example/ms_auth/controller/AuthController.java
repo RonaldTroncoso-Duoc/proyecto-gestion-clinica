@@ -1,41 +1,99 @@
 package example.ms_auth.controller;
 
-import example.ms_auth.model.Usuario;
+import example.ms_auth.dto.request.ChangePasswordDTO;
+import example.ms_auth.dto.request.LoginRequestDTO;
+import example.ms_auth.dto.request.RegisterRequestDTO;
+import example.ms_auth.dto.response.ApiResponseDTO;
+import example.ms_auth.dto.response.AuthResponseDTO;
+import example.ms_auth.dto.response.UserResponseDTO;
 import example.ms_auth.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.security.core.Authentication;
+import example.ms_auth.dto.response.UserProfileDTO;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Auth", description = "API de autenticación")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
-    // Registro de usuario (mantiene el retorno del objeto Usuario)
-    @PostMapping("/register")
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(authService.registrar(usuario));
-    }
-
-    // Login de usuario: Ahora devuelve un JSON con el token
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        try {
-            String token = authService.login(username, password);
-            
-            // Creamos un mapa para devolver el token de forma estructurada
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            // Si las credenciales fallan, devolvemos 401
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(
+            @Valid @RequestBody LoginRequestDTO request
+    ) {
+
+        log.info("Request login recibida para usuario {}",
+                request.getUsername());
+
+        AuthResponseDTO response = authService.login(request);
+
+        return ResponseEntity.ok(
+                ApiResponseDTO.success(
+                        "Login exitoso",
+                        response
+                )
+        );
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> register(
+            @Valid @RequestBody RegisterRequestDTO request
+    ) {
+
+        log.info("Request registro recibida para usuario {}",
+                request.getUsername());
+
+        UserResponseDTO response = authService.register(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        ApiResponseDTO.success(
+                                "Usuario registrado correctamente",
+                                response
+                        )
+                );
+    }
+    @GetMapping("/me")
+        public ResponseEntity<ApiResponseDTO<UserProfileDTO>> profile( 
+        Authentication authentication
+) {
+
+    UserProfileDTO profile =
+            authService.getProfile(authentication.getName());
+
+    return ResponseEntity.ok(
+            ApiResponseDTO.success(
+                    "Perfil obtenido correctamente",
+                    profile
+            )
+    );
+}
+
+@PutMapping("/change-password")
+public ResponseEntity<ApiResponseDTO<Void>> changePassword(
+        Authentication authentication,
+        @Valid @RequestBody ChangePasswordDTO request
+) {
+
+    authService.changePassword(
+            authentication.getName(),
+            request
+    );
+
+    return ResponseEntity.ok(
+            ApiResponseDTO.success(
+                    "Contraseña actualizada correctamente",
+                    null
+            )
+    );
+}
 }
