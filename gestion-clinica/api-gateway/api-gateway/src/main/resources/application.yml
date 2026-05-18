@@ -8,21 +8,17 @@ spring:
   cloud:
     gateway:
       routes:
-        # 1. Ruta para el Microservicio de Autenticación
-        # Esta ruta debe ser LIBRE (sin el filtro) para que la gente pueda loguearse
         - id: ms-auth
           uri: lb://ms-auth
           predicates:
             - Path=/api/auth/**
 
-        # 2. Ejemplo de Ruta Protegida (ms-pacientes)
-        # Aquí es donde el Gateway pedirá el Token
         - id: ms-pacientes
           uri: lb://ms-pacientes
           predicates:
             - Path=/api/pacientes/**
           filters:
-            - AuthenticationFilter # <-- Este nombre debe coincidir con tu clase Java
+            - AuthenticationFilter
 
         - id: ms-medicos
           uri: lb://ms-medicos
@@ -37,6 +33,31 @@ spring:
             - Path=/api/citas/**
           filters:
             - AuthenticationFilter
+
+        - id: ms-especialidades
+          uri: lb://ms-especialidades
+          predicates:
+            - Path=/api/especialidades/**
+          filters:
+            - AuthenticationFilter
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: ms-auth
+        url: /ms-auth/v3/api-docs
+
+      - name: ms-citas
+        url: /ms-citas/v3/api-docs
+
+      - name: ms-especialidades
+        url: /ms-especialidades/v3/api-docs
+
+      - name: ms-medicos
+        url: /ms-medicos/v3/api-docs
+
+      - name: ms-pacientes
+        url: /ms-pacientes/v3/api-docs
 
 eureka:
   client:

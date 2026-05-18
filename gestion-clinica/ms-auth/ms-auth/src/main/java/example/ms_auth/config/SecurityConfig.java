@@ -49,14 +49,14 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+        .requestMatchers(
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html"
+).permitAll()
 
-                        .anyRequest().authenticated()
-                )
+        .anyRequest().authenticated()
+)
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
