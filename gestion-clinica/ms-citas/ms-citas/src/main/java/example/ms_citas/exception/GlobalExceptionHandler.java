@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
+import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +64,21 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+        AccessDeniedException ex
+) {
+
+    ErrorResponse error = ErrorResponse.builder()
+            .error("Acceso Denegado")
+            .message(ex.getMessage())
+            .status(403)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    return ResponseEntity.status(403).body(error);
+}
 
     private ResponseEntity<Object> buildResponse(String message, HttpStatus status, String error) {
         Map<String, Object> body = new HashMap<>();

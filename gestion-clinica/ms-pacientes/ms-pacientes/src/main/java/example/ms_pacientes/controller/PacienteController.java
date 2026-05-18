@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 @RestController
@@ -20,30 +20,35 @@ public class PacienteController {
 
     private final PacienteService service;
 
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping
     public ResponseEntity<List<PacienteResponseDTO>> listarTodos() {
         log.info("GET /api/pacientes");
         return ResponseEntity.ok(service.listarTodos());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/activos")
     public ResponseEntity<List<PacienteResponseDTO>> listarActivos() {
         log.info("GET /api/pacientes/activos");
         return ResponseEntity.ok(service.listarActivos());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<PacienteResponseDTO> buscarPorId(@PathVariable Long id) {
         log.info("GET /api/pacientes/{}", id);
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/run/{run}")
     public ResponseEntity<PacienteResponseDTO> buscarPorRun(@PathVariable String run) {
         log.info("GET /api/pacientes/run/{}", run);
         return ResponseEntity.ok(service.buscarPorRun(run));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PacienteResponseDTO> crear(@Valid @RequestBody PacienteRequestDTO dto) {
         log.info("POST /api/pacientes");
@@ -51,6 +56,7 @@ public class PacienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PacienteResponseDTO> actualizar(
             @PathVariable Long id,
@@ -60,18 +66,21 @@ public class PacienteController {
         return ResponseEntity.ok(service.actualizar(id, dto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/activar")
     public ResponseEntity<PacienteResponseDTO> activar(@PathVariable Long id) {
         log.info("PATCH /api/pacientes/{}/activar", id);
         return ResponseEntity.ok(service.activar(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/desactivar")
     public ResponseEntity<PacienteResponseDTO> desactivar(@PathVariable Long id) {
         log.info("PATCH /api/pacientes/{}/desactivar", id);
         return ResponseEntity.ok(service.desactivar(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         log.info("DELETE /api/pacientes/{}", id);

@@ -10,10 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
+import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@Slf4j
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
     @Value("${jwt.secret}")
@@ -43,18 +44,46 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             }
 
             try {
-                // 3. Validar el token usando la misma llave secreta
-                Jwts.parserBuilder()
-                    .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
-                    .build()
-                    .parseClaimsJws(authHeader);
-            } catch (Exception e) {
-                // Si el token expiró o es falso, lanzamos error 401
-                return onError(exchange, "Token inválido o expirado", HttpStatus.UNAUTHORIZED);
-            }
 
-            // 4. Si todo está bien, lo deja pasar al siguiente microservicio
-            return chain.filter(exchange);
+                var claims = Jwts.parserBuilder()
+                    .setSigningKey(
+                        Keys.hmacShaKeyFor(
+                            secret.getBytes(StandardCharsets.UTF_8)
+                    )
+            )
+                    .build()
+                    .parseClaimsJws(authHeader)
+                    .getBody();
+
+                String username = claims.getSubject();
+
+                Object roles = claims.get("roles");
+
+                log.info("JWT valido para usuario: {}", username);
+
+                ServerWebExchange modifiedExchange = exchange.mutate()
+                    .request(r -> r.headers(headers -> {
+
+                        headers.add("X-Auth-User", username);
+
+                        headers.add("X-Auth-Roles", roles.toString());
+
+                    }))
+                    .build();
+
+                return chain.filter(modifiedExchange);
+
+            } catch (Exception e) {
+
+                log.error("JWT invalido: {}", e.getMessage());
+
+                return onError(
+                    exchange,
+                    "Token invalido o expirado",
+                    HttpStatus.UNAUTHORIZED
+    );
+}
+
         };
     }
 
