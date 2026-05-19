@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class NotificacionController {
     private final NotificacionService service;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarTodas() {
 
         log.info("GET /api/notificaciones");
@@ -28,6 +30,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
     public ResponseEntity<NotificacionResponseDTO> buscarPorId(@PathVariable Long id) {
 
         log.info("GET /api/notificaciones/{}", id);
@@ -36,6 +39,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarPorPaciente(
             @PathVariable Long pacienteId
     ) {
@@ -46,6 +50,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/estado/{estado}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarPorEstado(
             @PathVariable String estado
     ) {
@@ -56,6 +61,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/tipo/{tipo}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarPorTipo(
             @PathVariable String tipo
     ) {
@@ -66,6 +72,7 @@ public class NotificacionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<NotificacionResponseDTO> crear(
             @Valid @RequestBody NotificacionRequestDTO dto
     ) {
@@ -77,6 +84,7 @@ public class NotificacionController {
     }
 
     @PutMapping("/{id}/enviada")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<NotificacionResponseDTO> marcarEnviada(
             @PathVariable Long id
     ) {
@@ -87,6 +95,7 @@ public class NotificacionController {
     }
 
     @PutMapping("/{id}/fallida")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<NotificacionResponseDTO> marcarFallida(
             @PathVariable Long id
     ) {
@@ -97,6 +106,7 @@ public class NotificacionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
 
         log.info("DELETE /api/notificaciones/{}", id);

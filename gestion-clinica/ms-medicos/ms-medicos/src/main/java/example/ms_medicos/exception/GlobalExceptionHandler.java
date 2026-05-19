@@ -57,15 +57,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> handleAccessDenied(
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
         AccessDeniedException ex
 ) {
 
-    return buildResponse(
-            ex.getMessage(),
-            HttpStatus.FORBIDDEN,
-            "Acceso Denegado"
-    );
+    ErrorResponse error = ErrorResponse.builder()
+            .error("Acceso Denegado")
+            .message(ex.getMessage())
+            .status(403)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+    return ResponseEntity.status(403).body(error);
 }
     private ResponseEntity<Object> buildResponse(String message, HttpStatus status, String error) {
         Map<String, Object> body = new HashMap<>();

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -20,48 +21,56 @@ public class FichaClinicaController {
     private final FichaClinicaService service;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarTodas() {
         log.info("GET /api/fichas-clinicas");
         return ResponseEntity.ok(service.listarTodas());
     }
 
     @GetMapping("/activas")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarActivas() {
         log.info("GET /api/fichas-clinicas/activas");
         return ResponseEntity.ok(service.listarActivas());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<FichaClinicaResponseDTO> buscarPorId(@PathVariable Long id) {
         log.info("GET /api/fichas-clinicas/{}", id);
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @GetMapping("/cita/{citaId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<FichaClinicaResponseDTO> buscarPorCita(@PathVariable Long citaId) {
         log.info("GET /api/fichas-clinicas/cita/{}", citaId);
         return ResponseEntity.ok(service.buscarPorCita(citaId));
     }
 
     @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarPorPaciente(@PathVariable Long pacienteId) {
         log.info("GET /api/fichas-clinicas/paciente/{}", pacienteId);
         return ResponseEntity.ok(service.listarPorPaciente(pacienteId));
     }
 
     @GetMapping("/medico/{medicoId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarPorMedico(@PathVariable Long medicoId) {
         log.info("GET /api/fichas-clinicas/medico/{}", medicoId);
         return ResponseEntity.ok(service.listarPorMedico(medicoId));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<FichaClinicaResponseDTO> crear(@Valid @RequestBody FichaClinicaRequestDTO dto) {
         log.info("POST /api/fichas-clinicas");
         return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
     public ResponseEntity<FichaClinicaResponseDTO> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody FichaClinicaRequestDTO dto
@@ -71,18 +80,21 @@ public class FichaClinicaController {
     }
 
     @PutMapping("/{id}/desactivar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FichaClinicaResponseDTO> desactivar(@PathVariable Long id) {
         log.info("PUT /api/fichas-clinicas/{}/desactivar", id);
         return ResponseEntity.ok(service.desactivar(id));
     }
 
     @PutMapping("/{id}/activar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FichaClinicaResponseDTO> activar(@PathVariable Long id) {
         log.info("PUT /api/fichas-clinicas/{}/activar", id);
         return ResponseEntity.ok(service.activar(id));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         log.info("DELETE /api/fichas-clinicas/{}", id);
         service.eliminar(id);

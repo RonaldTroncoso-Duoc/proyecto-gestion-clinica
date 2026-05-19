@@ -31,11 +31,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && rolesHeader != null) {
 
+            log.info("Roles recibidos: {}", rolesHeader);
+
             List<SimpleGrantedAuthority> authorities =
-                    Arrays.stream(rolesHeader.replace("[", "").replace("]", "").split(","))
+                    Arrays.stream(
+                                    rolesHeader
+                                            .replace("[", "")
+                                            .replace("]", "")
+                                            .split(",")
+                            )
                             .map(String::trim)
-                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+
+                            .map(role ->
+                                    role.startsWith("ROLE_")
+                                            ? role
+                                            : "ROLE_" + role
+                            )
+
+                            .map(SimpleGrantedAuthority::new)
                             .toList();
+                authorities.forEach(a ->
+                        log.info("Authority creada: {}", a.getAuthority())
+                );
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(

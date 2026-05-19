@@ -13,20 +13,6 @@ spring:
           predicates:
             - Path=/api/auth/**
 
-        - id: ms-pacientes
-          uri: lb://ms-pacientes
-          predicates:
-            - Path=/api/pacientes/**
-          filters:
-            - AuthenticationFilter
-
-        - id: ms-medicos
-          uri: lb://ms-medicos
-          predicates:
-            - Path=/api/medicos/**
-          filters:
-            - AuthenticationFilter
-
         - id: ms-citas
           uri: lb://ms-citas
           predicates:
@@ -38,6 +24,55 @@ spring:
           uri: lb://ms-especialidades
           predicates:
             - Path=/api/especialidades/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-fichas-clinicas
+          uri: lb://ms-fichas-clinicas
+          predicates:
+            - Path=/api/fichas-clinicas/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-horarios
+          uri: lb://ms-horarios
+          predicates:
+            - Path=/api/horarios/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-medicos
+          uri: lb://ms-medicos
+          predicates:
+            - Path=/api/medicos/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-notificaciones
+          uri: lb://ms-notificaciones
+          predicates:
+            - Path=/api/notificaciones/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-pacientes
+          uri: lb://ms-pacientes
+          predicates:
+            - Path=/api/pacientes/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-pagos
+          uri: lb://ms-pagos
+          predicates:
+            - Path=/api/pagos/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ms-recetas
+          uri: lb://ms-recetas
+          predicates:
+            - Path=/api/recetas/**
           filters:
             - AuthenticationFilter
 

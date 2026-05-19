@@ -17,17 +17,23 @@ public class OpenApiConfig {
 
         return new OpenAPI()
 
-                .info(new Info()
-                        .title("MS-ESPECIALIDADES API")
-                        .version("1.0")
-                        .description("Microservicio de especialidades"))
+                .info(
+                        new Info()
+                                .title("MS-ESPECIALIDADES API")
+                                .version("1.0")
+                                .description(
+                                        "Microservicio de especialidades"
+                                )
+                )
 
                 .addSecurityItem(
-                        new SecurityRequirement().addList(securitySchemeName)
+                        new SecurityRequirement()
+                                .addList(securitySchemeName)
                 )
 
                 .schemaRequirement(
                         securitySchemeName,
+
                         new SecurityScheme()
                                 .name(securitySchemeName)
                                 .type(SecurityScheme.Type.HTTP)
