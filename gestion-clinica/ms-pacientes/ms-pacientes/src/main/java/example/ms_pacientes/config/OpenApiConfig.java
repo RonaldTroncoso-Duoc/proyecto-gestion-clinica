@@ -19,10 +19,10 @@ public class OpenApiConfig {
 
                 .info(
                         new Info()
-                                .title("MS-PACIENTES API")
+                                .title("MS-PACIENTES API Gestión Clínica")
                                 .version("1.0")
                                 .description(
-                                        "Microservicio de gestión de pacientes"
+                                        "Documentación del microservicio de gestión de pacientes"
                                 )
                 )
 
