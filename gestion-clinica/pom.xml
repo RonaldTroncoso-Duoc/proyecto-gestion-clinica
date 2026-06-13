@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================
+         PARENT: Spring Boot
+         ============================================================ -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.13</version>
+        <relativePath/>
+    </parent>
+
+    <!-- ============================================================
+         COORDENADAS DEL PARENT POM
+         ============================================================ -->
+    <groupId>example</groupId>
+    <artifactId>gestion-clinica-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <!-- ============================================================
+         MÓDULOS (rutas actuales con doble anidación)
+         ============================================================ -->
+    <modules>
+        <module>api-gateway/api-gateway</module>
+        <module>eureka-server/eureka-server</module>
+        <module>ms-auth/ms-auth</module>
+        <module>ms-pacientes/ms-pacientes</module>
+        <module>ms-medicos/ms-medicos</module>
+        <module>ms-citas/ms-citas</module>
+        <module>ms-especialidades/ms-especialidades</module>
+        <module>ms-horarios/ms-horarios</module>
+        <module>ms-fichas-clinicas/ms-fichas-clinicas</module>
+        <module>ms-recetas/ms-recetas</module>
+        <module>ms-pagos/ms-pagos</module>
+        <module>ms-notificaciones/ms-notificaciones</module>
+    </modules>
+
+    <!-- ============================================================
+         PROPIEDADES CENTRALIZADAS
+         ============================================================ -->
+    <properties>
+        <java.version>21</java.version>
+        <spring-cloud.version>2025.0.2</spring-cloud.version>
+        <springdoc.version>2.8.9</springdoc.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <lombok.version>1.18.38</lombok.version>
+    </properties>
+
+    <!-- ============================================================
+         GESTIÓN DE VERSIONES (dependencyManagement)
+         No incluye dependencias, solo controla versiones
+         ============================================================ -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Spring Cloud BOM: versiona todos los spring-cloud-* -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Springdoc para servicios MVC (webmvc) -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Springdoc para Gateway/WebFlux (webflux) -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- JJWT: API de compilación -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- JJWT: Implementación (runtime) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- JJWT: Serialización Jackson (runtime) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ============================================================
+         DEPENDENCIAS COMUNES A TODOS LOS MÓDULOS
+         ============================================================ -->
+    <dependencies>
+
+        <!-- Lombok: code generation (optional = no transitivo) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Test: testing framework -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ============================================================
+         CONFIGURACIÓN DE BUILD COMÚN
+         ============================================================ -->
+    <build>
+        <plugins>
+
+            <!-- Spring Boot Maven Plugin: empaquetado ejecutable -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- Compiler Plugin: procesamiento de anotaciones Lombok -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
