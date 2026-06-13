@@ -14,7 +14,7 @@
     </parent>
 
     <groupId>example</groupId>
-    <artifactId>ms-pacientes</artifactId>
+    <artifactId>ms-pagos</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
