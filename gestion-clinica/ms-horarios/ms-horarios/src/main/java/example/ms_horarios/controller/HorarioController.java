@@ -22,42 +22,42 @@ public class HorarioController {
     private final HorarioService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<HorarioResponseDTO>> listarTodos() {
         log.info("GET /api/horarios");
         return ResponseEntity.ok(service.listarTodos());
     }
 
     @GetMapping("/disponibles")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PACIENTE')")
     public ResponseEntity<List<HorarioResponseDTO>> listarDisponibles() {
         log.info("GET /api/horarios/disponibles");
         return ResponseEntity.ok(service.listarDisponibles());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<HorarioResponseDTO> buscarPorId(@PathVariable Long id) {
         log.info("GET /api/horarios/{}", id);
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @GetMapping("/medico/{medicoId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<HorarioResponseDTO>> listarPorMedico(@PathVariable Long medicoId) {
         log.info("GET /api/horarios/medico/{}", medicoId);
         return ResponseEntity.ok(service.listarPorMedico(medicoId));
     }
 
     @GetMapping("/medico/{medicoId}/disponibles")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PACIENTE')")
     public ResponseEntity<List<HorarioResponseDTO>> listarDisponiblesPorMedico(@PathVariable Long medicoId) {
         log.info("GET /api/horarios/medico/{}/disponibles", medicoId);
         return ResponseEntity.ok(service.listarDisponiblesPorMedico(medicoId));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<HorarioResponseDTO> crear(@Valid @RequestBody HorarioRequestDTO dto) {
         log.info("POST /api/horarios");
         HorarioResponseDTO response = service.crear(dto);
@@ -65,7 +65,7 @@ public class HorarioController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<HorarioResponseDTO> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody HorarioRequestDTO dto
@@ -75,14 +75,14 @@ public class HorarioController {
     }
 
     @PutMapping("/{id}/ocupar")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<HorarioResponseDTO> ocupar(@PathVariable Long id) {
         log.info("PUT /api/horarios/{}/ocupar", id);
         return ResponseEntity.ok(service.ocupar(id));
     }
 
     @PutMapping("/{id}/liberar")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<HorarioResponseDTO> liberar(@PathVariable Long id) {
         log.info("PUT /api/horarios/{}/liberar", id);
         return ResponseEntity.ok(service.liberar(id));

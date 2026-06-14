@@ -21,56 +21,56 @@ public class FichaClinicaController {
     private final FichaClinicaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarTodas() {
         log.info("GET /api/fichas-clinicas");
         return ResponseEntity.ok(service.listarTodas());
     }
 
     @GetMapping("/activas")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarActivas() {
         log.info("GET /api/fichas-clinicas/activas");
         return ResponseEntity.ok(service.listarActivas());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<FichaClinicaResponseDTO> buscarPorId(@PathVariable Long id) {
         log.info("GET /api/fichas-clinicas/{}", id);
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @GetMapping("/cita/{citaId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<FichaClinicaResponseDTO> buscarPorCita(@PathVariable Long citaId) {
         log.info("GET /api/fichas-clinicas/cita/{}", citaId);
         return ResponseEntity.ok(service.buscarPorCita(citaId));
     }
 
     @GetMapping("/paciente/{pacienteId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarPorPaciente(@PathVariable Long pacienteId) {
         log.info("GET /api/fichas-clinicas/paciente/{}", pacienteId);
         return ResponseEntity.ok(service.listarPorPaciente(pacienteId));
     }
 
     @GetMapping("/medico/{medicoId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<FichaClinicaResponseDTO>> listarPorMedico(@PathVariable Long medicoId) {
         log.info("GET /api/fichas-clinicas/medico/{}", medicoId);
         return ResponseEntity.ok(service.listarPorMedico(medicoId));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<FichaClinicaResponseDTO> crear(@Valid @RequestBody FichaClinicaRequestDTO dto) {
         log.info("POST /api/fichas-clinicas");
         return ResponseEntity.status(HttpStatus.CREATED).body(service.crear(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<FichaClinicaResponseDTO> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody FichaClinicaRequestDTO dto

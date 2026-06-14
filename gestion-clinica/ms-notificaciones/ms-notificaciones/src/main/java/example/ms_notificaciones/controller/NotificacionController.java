@@ -21,7 +21,7 @@ public class NotificacionController {
     private final NotificacionService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarTodas() {
 
         log.info("GET /api/notificaciones");
@@ -30,7 +30,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PACIENTE')")
     public ResponseEntity<NotificacionResponseDTO> buscarPorId(@PathVariable Long id) {
 
         log.info("GET /api/notificaciones/{}", id);
@@ -39,7 +39,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/paciente/{pacienteId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO','PACIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PACIENTE')")
     public ResponseEntity<List<NotificacionResponseDTO>> listarPorPaciente(
             @PathVariable Long pacienteId
     ) {
@@ -72,7 +72,7 @@ public class NotificacionController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MEDICO')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<NotificacionResponseDTO> crear(
             @Valid @RequestBody NotificacionRequestDTO dto
     ) {
