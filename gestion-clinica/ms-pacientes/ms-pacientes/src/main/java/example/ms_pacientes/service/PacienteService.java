@@ -17,6 +17,8 @@ public interface PacienteService {
 
     PacienteResponseDTO crear(PacienteRequestDTO dto);
 
+    PacienteResponseDTO registrar(PacienteRequestDTO dto);
+
     PacienteResponseDTO actualizar(Long id, PacienteRequestDTO dto);
 
     void eliminar(Long id);

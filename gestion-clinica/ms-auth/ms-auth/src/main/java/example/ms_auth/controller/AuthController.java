@@ -62,6 +62,22 @@ public class AuthController {
                         )
                 );
     }
+
+    @PostMapping("/internal/register")
+    public ResponseEntity<UserResponseDTO> registerInternal(
+            @Valid @RequestBody RegisterRequestDTO request,
+            @RequestParam(defaultValue = "PATIENT") String role
+    ) {
+
+        log.info("Request registro interno para usuario {} con rol {}",
+                request.getUsername(), role);
+
+        UserResponseDTO response = authService.registerUser(request, role);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(response);
+    }
+
     @GetMapping("/me")
         public ResponseEntity<ApiResponseDTO<UserProfileDTO>> profile( 
         Authentication authentication

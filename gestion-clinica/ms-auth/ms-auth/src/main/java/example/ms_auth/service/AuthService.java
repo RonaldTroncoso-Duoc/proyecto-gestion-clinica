@@ -14,6 +14,8 @@ public interface AuthService {
 
     UserResponseDTO register(RegisterRequestDTO request);
 
+    UserResponseDTO registerUser(RegisterRequestDTO request, String roleName);
+
     UserProfileDTO getProfile(String username);
 
     void changePassword(String username, ChangePasswordDTO request);

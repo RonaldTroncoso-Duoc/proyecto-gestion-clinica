@@ -36,4 +36,8 @@ public class PacienteRequestDTO {
 
     @Size(max = 200, message = "La dirección no puede superar los 200 caracteres")
     private String direccion;
+
+    private String username;
+
+    private String password;
 }

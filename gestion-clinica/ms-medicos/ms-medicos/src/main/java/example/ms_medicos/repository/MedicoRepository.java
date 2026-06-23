@@ -6,14 +6,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MedicoRepository extends JpaRepository<Medico, Long> {
-    // Métodos
+
     Optional<Medico> findByRun(String run);
 
     Optional<Medico> findByEmailIgnoreCase(String email);
 
+    Optional<Medico> findByAuthUserId(Long authUserId);
+
     boolean existsByRun(String run);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByAuthUserId(Long authUserId);
 
     List<Medico> findByActivoTrue();
 

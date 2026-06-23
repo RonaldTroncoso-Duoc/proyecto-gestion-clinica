@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class PacienteResponseDTO {
 
     private Long id;
+    private Long authUserId;
     private String run;
     private String nombre;
     private String apellido;

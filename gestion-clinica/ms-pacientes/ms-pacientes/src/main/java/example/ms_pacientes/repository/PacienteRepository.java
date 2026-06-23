@@ -12,9 +12,13 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     Optional<Paciente> findByEmailIgnoreCase(String email);
 
+    Optional<Paciente> findByAuthUserId(Long authUserId);
+
     boolean existsByRun(String run);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByAuthUserId(Long authUserId);
 
     List<Paciente> findByActivoTrue();
 }

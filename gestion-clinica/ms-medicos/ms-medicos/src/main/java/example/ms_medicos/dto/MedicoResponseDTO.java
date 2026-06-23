@@ -8,6 +8,7 @@ import lombok.Data;
 public class MedicoResponseDTO {
 
     private Long id;
+    private Long authUserId;
     private String run;
     private String nombre;
     private String apellido;

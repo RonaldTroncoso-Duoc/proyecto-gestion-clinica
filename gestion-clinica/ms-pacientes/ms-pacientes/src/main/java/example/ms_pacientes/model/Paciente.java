@@ -17,6 +17,9 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "auth_user_id", unique = true)
+    private Long authUserId;
+
     @Column(nullable = false, unique = true, length = 12)
     private String run;
 

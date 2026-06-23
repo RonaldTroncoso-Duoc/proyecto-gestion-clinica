@@ -78,8 +78,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserResponseDTO register(RegisterRequestDTO request) {
+        log.info("Registrando usuario {} con rol PATIENT", request.getUsername());
+        return registerUser(request, "PATIENT");
+    }
 
-        log.info("Registrando usuario {}", request.getUsername());
+    @Override
+    public UserResponseDTO registerUser(RegisterRequestDTO request, String roleName) {
+
+        log.info("Registrando usuario {} con rol {}", request.getUsername(), roleName);
 
         if (userRepository.existsByUsername(request.getUsername())) {
 
@@ -95,9 +101,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("El email ya existe");
         }
 
-        RoleEntity role = roleRepository.findByName("PATIENT")
+        RoleEntity role = roleRepository.findByName(roleName)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Rol no encontrado")
+                        new ResourceNotFoundException("Rol " + roleName + " no encontrado")
                 );
 
         UserEntity user = UserEntity.builder()
@@ -110,10 +116,11 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity savedUser = userRepository.save(user);
 
-        log.info("Usuario registrado correctamente: {}", savedUser.getUsername());
+        log.info("Usuario registrado correctamente con rol {}: {}", roleName, savedUser.getUsername());
 
         return userMapper.toResponse(savedUser);
     }
+
         @Override
         @Transactional(readOnly = true)
         public UserProfileDTO getProfile(String username) {
