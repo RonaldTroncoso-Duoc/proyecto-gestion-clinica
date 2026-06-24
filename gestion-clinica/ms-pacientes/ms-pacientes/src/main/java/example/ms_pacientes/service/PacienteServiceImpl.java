@@ -1,5 +1,8 @@
 package example.ms_pacientes.service;
 
+import example.ms_pacientes.client.AuthClient;
+import example.ms_pacientes.dto.AuthRegisterRequestDTO;
+import example.ms_pacientes.dto.AuthUserResponseDTO;
 import example.ms_pacientes.dto.PacienteRequestDTO;
 import example.ms_pacientes.dto.PacienteResponseDTO;
 import example.ms_pacientes.exception.PacienteNotFoundException;
@@ -8,6 +11,7 @@ import example.ms_pacientes.repository.PacienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +21,7 @@ import java.util.List;
 public class PacienteServiceImpl implements PacienteService {
 
     private final PacienteRepository repository;
+    private final AuthClient authClient;
 
     @Override
     public List<PacienteResponseDTO> listarTodos() {
@@ -57,6 +62,7 @@ public class PacienteServiceImpl implements PacienteService {
     }
 
     @Override
+    @Transactional
     public PacienteResponseDTO crear(PacienteRequestDTO dto) {
         log.info("Creando paciente con RUN: {}", dto.getRun());
 
@@ -84,6 +90,61 @@ public class PacienteServiceImpl implements PacienteService {
         Paciente guardado = repository.save(paciente);
 
         log.info("Paciente creado correctamente con ID: {}", guardado.getId());
+
+        return mapToResponse(guardado);
+    }
+
+    @Override
+    @Transactional
+    public PacienteResponseDTO registrar(PacienteRequestDTO dto) {
+        log.info("Registrando nuevo paciente con RUN: {}", dto.getRun());
+
+        // 1. Validar datos locales
+        if (repository.existsByRun(dto.getRun())) {
+            log.warn("Intento de registro con RUN duplicado: {}", dto.getRun());
+            throw new RuntimeException("Ya existe un paciente registrado con ese RUN");
+        }
+
+        if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
+            log.warn("Intento de registro con email duplicado: {}", dto.getEmail());
+            throw new RuntimeException("Ya existe un paciente registrado con ese email");
+        }
+
+        // 2. Crear usuario en ms-auth via Feign
+        AuthRegisterRequestDTO authRequest = new AuthRegisterRequestDTO();
+        authRequest.setUsername(dto.getUsername());
+        authRequest.setEmail(dto.getEmail());
+        authRequest.setPassword(dto.getPassword());
+
+        log.info("Creando usuario en ms-auth para paciente: {}", dto.getUsername());
+
+        AuthUserResponseDTO authResponse;
+        try {
+            authResponse = authClient.registerUser(authRequest, "PATIENT");
+        } catch (Exception e) {
+            log.error("Error al crear usuario en ms-auth: {}", e.getMessage());
+            throw new RuntimeException("No se pudo crear el usuario de autenticación. " + e.getMessage());
+        }
+
+        Long authUserId = authResponse.getId();
+        log.info("Usuario creado en ms-auth con ID: {}", authUserId);
+
+        // 3. Crear paciente con authUserId
+        Paciente paciente = Paciente.builder()
+                .authUserId(authUserId)
+                .run(dto.getRun().trim())
+                .nombre(dto.getNombre().trim())
+                .apellido(dto.getApellido().trim())
+                .email(dto.getEmail().trim())
+                .telefono(dto.getTelefono().trim())
+                .fechaNacimiento(dto.getFechaNacimiento())
+                .direccion(dto.getDireccion())
+                .activo(true)
+                .build();
+
+        Paciente guardado = repository.save(paciente);
+
+        log.info("Paciente registrado correctamente con ID: {} y authUserId: {}", guardado.getId(), authUserId);
 
         return mapToResponse(guardado);
     }
@@ -174,6 +235,7 @@ public class PacienteServiceImpl implements PacienteService {
     private PacienteResponseDTO mapToResponse(Paciente paciente) {
         return PacienteResponseDTO.builder()
                 .id(paciente.getId())
+                .authUserId(paciente.getAuthUserId())
                 .run(paciente.getRun())
                 .nombre(paciente.getNombre())
                 .apellido(paciente.getApellido())

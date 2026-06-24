@@ -5,10 +5,11 @@ import example.ms_medicos.dto.AuthUserResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "ms-auth")
 public interface AuthClient {
 
     @PostMapping("/api/auth/internal/register")
-    AuthUserResponseDTO registerUser(@RequestBody AuthRegisterRequestDTO request);
+    AuthUserResponseDTO registerUser(@RequestBody AuthRegisterRequestDTO request, @RequestParam("role") String role);
 }

@@ -29,4 +29,8 @@ public class MedicoRequestDTO {
 
     @NotNull(message = "El ID de la especialidad es obligatorio")
     private Long especialidadId;
+
+    private String username;
+
+    private String password;
 }

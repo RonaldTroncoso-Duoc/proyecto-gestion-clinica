@@ -20,6 +20,13 @@ public class PacienteController {
 
     private final PacienteService service;
 
+    @PostMapping("/register")
+    public ResponseEntity<PacienteResponseDTO> register(@Valid @RequestBody PacienteRequestDTO dto) {
+        log.info("POST /api/pacientes/register para RUN: {}", dto.getRun());
+        PacienteResponseDTO response = service.registrar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping
     public ResponseEntity<List<PacienteResponseDTO>> listarTodos() {

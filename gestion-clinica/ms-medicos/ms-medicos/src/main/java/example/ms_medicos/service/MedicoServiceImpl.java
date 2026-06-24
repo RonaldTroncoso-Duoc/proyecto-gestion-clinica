@@ -3,8 +3,12 @@ package example.ms_medicos.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import example.ms_medicos.client.AuthClient;
 import example.ms_medicos.client.EspecialidadClient;
+import example.ms_medicos.dto.AuthRegisterRequestDTO;
+import example.ms_medicos.dto.AuthUserResponseDTO;
 import example.ms_medicos.dto.MedicoRequestDTO;
 import example.ms_medicos.dto.MedicoResponseDTO;
 import example.ms_medicos.exception.MedicoNotFoundException;
@@ -20,6 +24,7 @@ public class MedicoServiceImpl implements MedicoService{
 
     private final MedicoRepository repository;
     private final EspecialidadClient especialidadClient;
+    private final AuthClient authClient;
 
     @Override
     public List<MedicoResponseDTO> listarTodos() {
@@ -50,7 +55,7 @@ public class MedicoServiceImpl implements MedicoService{
     public List<MedicoResponseDTO> buscarPorEspecialidad(Long especialidadId) {
         log.info("Buscando médicos por especialidad ID: {}", especialidadId);
 
-        especialidadClient.obtenerEspecialidad(especialidadId); // Verificar que la especialidad exista
+        especialidadClient.obtenerEspecialidad(especialidadId);
         return repository.findByEspecialidadId(especialidadId)
                                                     .stream()
                                                     .map(this::mapToResponse)
@@ -69,85 +74,108 @@ public class MedicoServiceImpl implements MedicoService{
     }
 
     @Override
-public MedicoResponseDTO crear(MedicoRequestDTO dto) {
+    @Transactional
+    public MedicoResponseDTO crear(MedicoRequestDTO dto) {
 
-    log.info("Creando médico con RUN: {}", dto.getRun());
+        log.info("Creando médico con RUN: {}", dto.getRun());
 
-    // Validar que la especialidad exista
-    especialidadClient.obtenerEspecialidad(dto.getEspecialidadId());
+        // Validar que la especialidad exista
+        especialidadClient.obtenerEspecialidad(dto.getEspecialidadId());
 
-    // Validar RUN único
-    if (repository.existsByRun(dto.getRun())) {
-        log.warn("Intento de crear médico con RUN duplicado: {}", dto.getRun());
-        throw new RuntimeException("Ya existe un médico registrado con ese RUN");
+        // Validar RUN único
+        if (repository.existsByRun(dto.getRun())) {
+            log.warn("Intento de crear médico con RUN duplicado: {}", dto.getRun());
+            throw new RuntimeException("Ya existe un médico registrado con ese RUN");
+        }
+
+        // Validar email único
+        if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
+            log.warn("Intento de crear médico con email duplicado: {}", dto.getEmail());
+            throw new RuntimeException("Ya existe un médico registrado con ese email");
+        }
+
+        // Crear usuario DOCTOR en ms-auth via Feign (si hay username y password)
+        Long authUserId = null;
+        if (dto.getUsername() != null && dto.getPassword() != null) {
+            AuthRegisterRequestDTO authRequest = new AuthRegisterRequestDTO();
+            authRequest.setUsername(dto.getUsername());
+            authRequest.setEmail(dto.getEmail());
+            authRequest.setPassword(dto.getPassword());
+
+            log.info("Creando usuario DOCTOR en ms-auth para: {}", dto.getUsername());
+
+            try {
+                AuthUserResponseDTO authResponse = authClient.registerUser(authRequest, "DOCTOR");
+                authUserId = authResponse.getId();
+                log.info("Usuario DOCTOR creado en ms-auth con ID: {}", authUserId);
+            } catch (Exception e) {
+                log.error("Error al crear usuario DOCTOR en ms-auth: {}", e.getMessage());
+                throw new RuntimeException("No se pudo crear el usuario DOCTOR en ms-auth. " + e.getMessage());
+            }
+        }
+
+        Medico medico = Medico.builder()
+                .authUserId(authUserId)
+                .run(dto.getRun().trim())
+                .nombre(dto.getNombre().trim())
+                .apellido(dto.getApellido().trim())
+                .email(dto.getEmail().trim())
+                .telefono(dto.getTelefono().trim())
+                .especialidadId(dto.getEspecialidadId())
+                .activo(true)
+                .build();
+
+        Medico guardado = repository.save(medico);
+
+        log.info("Médico creado correctamente con ID: {} y authUserId: {}", guardado.getId(), authUserId);
+
+        return mapToResponse(guardado);
     }
 
-    // Validar email único
-    if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
-        log.warn("Intento de crear médico con email duplicado: {}", dto.getEmail());
-        throw new RuntimeException("Ya existe un médico registrado con ese email");
+    @Override
+    @Transactional
+    public MedicoResponseDTO actualizar(Long id, MedicoRequestDTO dto) {
+
+        log.info("Actualizando médico con ID: {}", id);
+
+        Medico medico = obtenerEntidadPorId(id);
+
+        // Validar que la especialidad exista
+        especialidadClient.obtenerEspecialidad(dto.getEspecialidadId());
+
+        // Validar RUN único, pero permitiendo que sea el mismo del médico actual
+        repository.findByRun(dto.getRun())
+                .ifPresent(m -> {
+                    if (!m.getId().equals(id)) {
+                        log.warn("Intento de actualizar médico con RUN duplicado: {}", dto.getRun());
+                        throw new RuntimeException("Ya existe otro médico registrado con ese RUN");
+                    }
+                });
+
+        // Validar email único, pero permitiendo que sea el mismo del médico actual
+        repository.findByEmailIgnoreCase(dto.getEmail())
+                .ifPresent(m -> {
+                    if (!m.getId().equals(id)) {
+                        log.warn("Intento de actualizar médico con email duplicado: {}", dto.getEmail());
+                        throw new RuntimeException("Ya existe otro médico registrado con ese email");
+                    }
+                });
+
+        medico.setRun(dto.getRun().trim());
+        medico.setNombre(dto.getNombre().trim());
+        medico.setApellido(dto.getApellido().trim());
+        medico.setEmail(dto.getEmail().trim());
+        medico.setTelefono(dto.getTelefono().trim());
+        medico.setEspecialidadId(dto.getEspecialidadId());
+
+        Medico actualizado = repository.save(medico);
+
+        log.info("Médico actualizado correctamente con ID: {}", actualizado.getId());
+
+        return mapToResponse(actualizado);
     }
 
-    Medico medico = Medico.builder()
-            .run(dto.getRun().trim())
-            .nombre(dto.getNombre().trim())
-            .apellido(dto.getApellido().trim())
-            .email(dto.getEmail().trim())
-            .telefono(dto.getTelefono().trim())
-            .especialidadId(dto.getEspecialidadId())
-            .activo(true)
-            .build();
-
-    Medico guardado = repository.save(medico);
-
-    log.info("Médico creado correctamente con ID: {}", guardado.getId());
-
-    return mapToResponse(guardado);
-}
-
-@Override
-public MedicoResponseDTO actualizar(Long id, MedicoRequestDTO dto) {
-
-    log.info("Actualizando médico con ID: {}", id);
-
-    Medico medico = obtenerEntidadPorId(id);
-
-    // Validar que la especialidad exista
-    especialidadClient.obtenerEspecialidad(dto.getEspecialidadId());
-
-    // Validar RUN único, pero permitiendo que sea el mismo del médico actual
-    repository.findByRun(dto.getRun())
-            .ifPresent(m -> {
-                if (!m.getId().equals(id)) {
-                    log.warn("Intento de actualizar médico con RUN duplicado: {}", dto.getRun());
-                    throw new RuntimeException("Ya existe otro médico registrado con ese RUN");
-                }
-            });
-
-    // Validar email único, pero permitiendo que sea el mismo del médico actual
-    repository.findByEmailIgnoreCase(dto.getEmail())
-            .ifPresent(m -> {
-                if (!m.getId().equals(id)) {
-                    log.warn("Intento de actualizar médico con email duplicado: {}", dto.getEmail());
-                    throw new RuntimeException("Ya existe otro médico registrado con ese email");
-                }
-            });
-
-    medico.setRun(dto.getRun().trim());
-    medico.setNombre(dto.getNombre().trim());
-    medico.setApellido(dto.getApellido().trim());
-    medico.setEmail(dto.getEmail().trim());
-    medico.setTelefono(dto.getTelefono().trim());
-    medico.setEspecialidadId(dto.getEspecialidadId());
-
-    Medico actualizado = repository.save(medico);
-
-    log.info("Médico actualizado correctamente con ID: {}", actualizado.getId());
-
-    return mapToResponse(actualizado);
-}
-
-@Override
+    @Override
     public void eliminar(Long id) {
         log.info("Eliminando médico con ID: {}", id);
 
@@ -194,6 +222,7 @@ public MedicoResponseDTO actualizar(Long id, MedicoRequestDTO dto) {
     private MedicoResponseDTO mapToResponse(Medico medico) {
         return MedicoResponseDTO.builder()
                 .id(medico.getId())
+                .authUserId(medico.getAuthUserId())
                 .run(medico.getRun())
                 .nombre(medico.getNombre())
                 .apellido(medico.getApellido())
