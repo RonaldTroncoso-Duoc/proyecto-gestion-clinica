@@ -69,7 +69,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).listarTodos();
 
-        // Caso hipotetico de falla para QA: se esperaba HTTP 200 OK y se obtuvo HTTP 403 Forbidden.
+        // Un ejemplo de falla posible.
+        // Se esperaba: HTTP 200 OK.
+        // Se obtuvo: HTTP 403 Forbidden.
+        // QA deberia reportarlo asi: El endpoint GET /api/pacientes no retorna la lista de pacientes.
+        // Desarrollo deberia revisar: PacienteController.listarTodos() y la configuracion de seguridad del endpoint.
     }
 
     @Test
@@ -103,7 +107,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).listarActivos();
 
-        // Caso hipotetico de falla para QA: se esperaba solo pacientes activos y se obtuvo un paciente inactivo.
+        // Un ejemplo de falla posible.
+        // Se esperaba: lista con pacientes activos.
+        // Se obtuvo: lista con un paciente inactivo.
+        // QA deberia reportarlo asi: El endpoint GET /api/pacientes/activos retorna pacientes inactivos.
+        // Desarrollo deberia revisar: PacienteController.listarActivos() y PacienteService.listarActivos().
     }
 
     @Test
@@ -138,7 +146,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).buscarPorId(pacienteId);
 
-        // Caso hipotetico de falla para QA: se esperaba el paciente ID 3 y se obtuvo otro ID.
+        // Un ejemplo de falla posible.
+        // Se esperaba: paciente con ID 3.
+        // Se obtuvo: paciente con otro ID.
+        // QA deberia reportarlo asi: El endpoint GET /api/pacientes/3 retorna un paciente distinto al solicitado.
+        // Desarrollo deberia revisar: PacienteController.buscarPorId() y PacienteService.buscarPorId().
     }
 
     @Test
@@ -173,7 +185,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).buscarPorRun(run);
 
-        // Caso hipotetico de falla para QA: se esperaba el RUN 22222222-2 y se obtuvo otro RUN.
+        // Un ejemplo de falla posible.
+        // Se esperaba: paciente con RUN 22222222-2.
+        // Se obtuvo: paciente con otro RUN.
+        // QA deberia reportarlo asi: El endpoint GET /api/pacientes/run/22222222-2 retorna un RUN incorrecto.
+        // Desarrollo deberia revisar: PacienteController.buscarPorRun() y PacienteService.buscarPorRun().
     }
 
     @Test
@@ -224,7 +240,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).registrar(org.mockito.ArgumentMatchers.any());
 
-        // Caso hipotetico de falla para QA: se esperaba HTTP 201 Created y se obtuvo HTTP 200 OK.
+        // Un ejemplo de falla posible.
+        // Se esperaba: HTTP 201 Created.
+        // Se obtuvo: HTTP 200 OK.
+        // QA deberia reportarlo asi: El endpoint POST /api/pacientes/register registra el paciente pero responde un estado incorrecto.
+        // Desarrollo deberia revisar: PacienteController.register() y el ResponseEntity con HttpStatus.CREATED.
     }
 
     @Test
@@ -271,7 +291,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).crear(org.mockito.ArgumentMatchers.any());
 
-        // Caso hipotetico de falla para QA: se esperaba HTTP 201 Created y se obtuvo HTTP 400 Bad Request.
+        // Un ejemplo de falla posible.
+        // Se esperaba: HTTP 201 Created.
+        // Se obtuvo: HTTP 400 Bad Request.
+        // QA deberia reportarlo asi: El endpoint POST /api/pacientes rechaza un JSON valido para crear paciente.
+        // Desarrollo deberia revisar: PacienteController.crear(), PacienteRequestDTO y las validaciones aplicadas.
     }
 
     @Test
@@ -320,7 +344,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).actualizar(org.mockito.ArgumentMatchers.eq(pacienteId), org.mockito.ArgumentMatchers.any());
 
-        // Caso hipotetico de falla para QA: se esperaba HTTP 200 OK y se obtuvo HTTP 404 Not Found.
+        // Un ejemplo de falla posible.
+        // Se esperaba: HTTP 200 OK.
+        // Se obtuvo: HTTP 404 Not Found.
+        // QA deberia reportarlo asi: El endpoint PUT /api/pacientes/7 no actualiza un paciente existente.
+        // Desarrollo deberia revisar: PacienteController.actualizar() y PacienteService.actualizar().
     }
 
     @Test
@@ -354,7 +382,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).activar(pacienteId);
 
-        // Caso hipotetico de falla para QA: se esperaba activo=true y se obtuvo activo=false.
+        // Un ejemplo de falla posible.
+        // Se esperaba: activo=true.
+        // Se obtuvo: activo=false.
+        // QA deberia reportarlo asi: El endpoint PATCH /api/pacientes/8/activar responde sin activar el paciente.
+        // Desarrollo deberia revisar: PacienteController.activar() y PacienteService.activar().
     }
 
     @Test
@@ -388,7 +420,11 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).desactivar(pacienteId);
 
-        // Caso hipotetico de falla para QA: se esperaba activo=false y se obtuvo activo=true.
+        // Un ejemplo de falla posible.
+        // Se esperaba: activo=false.
+        // Se obtuvo: activo=true.
+        // QA deberia reportarlo asi: El endpoint PATCH /api/pacientes/9/desactivar responde sin desactivar el paciente.
+        // Desarrollo deberia revisar: PacienteController.desactivar() y PacienteService.desactivar().
     }
 
     @Test
@@ -405,6 +441,10 @@ class PacienteControllerTest {
         // VERIFY: comprobar llamadas al mock si corresponde.
         verify(pacienteService).eliminar(pacienteId);
 
-        // Caso hipotetico de falla para QA: se esperaba HTTP 204 No Content y se obtuvo HTTP 200 OK.
+        // Un ejemplo de falla posible.
+        // Se esperaba: HTTP 204 No Content.
+        // Se obtuvo: HTTP 200 OK.
+        // QA deberia reportarlo asi: El endpoint DELETE /api/pacientes/10 elimina el paciente pero responde un estado incorrecto.
+        // Desarrollo deberia revisar: PacienteController.eliminar() y la respuesta noContent().
     }
 }
