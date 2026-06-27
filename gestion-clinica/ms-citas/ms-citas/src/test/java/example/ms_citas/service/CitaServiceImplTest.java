@@ -165,7 +165,7 @@ class CitaServiceImplTest {
     @Test void eliminar_citaAgendada_debeLiberarHorarioYDelete() {
         Cita c = crearCita(10L,10L,20L,30L,"Control","AGENDADA");
         when(repository.findById(10L)).thenReturn(Optional.of(c));
-        doNothing().when(horarioClient).liberarHorario(30L);
+        when(horarioClient.liberarHorario(30L)).thenReturn(new Object());
         doNothing().when(repository).delete(c);
         service.eliminar(10L);
         verify(horarioClient).liberarHorario(30L);
@@ -180,4 +180,103 @@ class CitaServiceImplTest {
         verify(horarioClient, never()).liberarHorario(any());
         verify(repository).delete(c);
     }
+
+    // ═══════════════════ ERROR PATH ══════════════════════════════════════════
+
+    @Test void buscarPorId_cuandoNoExisteDebeLanzarCitaNotFoundException() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.buscarPorId(99L))
+                .isInstanceOf(CitaNotFoundException.class)
+                .hasMessage("Cita con ID 99 no encontrada");
+    }
+
+    @Test void listarPorPaciente_cuandoPacienteNoExisteDebeLanzarFeignException() {
+        when(pacienteClient.obtenerPaciente(999L)).thenThrow(FeignException.NotFound.class);
+        assertThatThrownBy(() -> service.listarPorPaciente(999L))
+                .isInstanceOf(FeignException.NotFound.class);
+        verify(repository, never()).findByPacienteId(any());
+    }
+
+    @Test void listarPorMedico_cuandoMedicoNoExisteDebeLanzarFeignException() {
+        when(medicoClient.obtenerMedico(999L)).thenThrow(FeignException.NotFound.class);
+        assertThatThrownBy(() -> service.listarPorMedico(999L))
+                .isInstanceOf(FeignException.NotFound.class);
+        verify(repository, never()).findByMedicoId(any());
+    }
+
+    @Test void crear_cuandoHorarioYaTieneCitaAgendadaDebeLanzarRuntimeException() {
+        CitaRequestDTO req = crearRequest(10L,20L,30L,"Control");
+        when(pacienteClient.obtenerPaciente(10L)).thenReturn(new Object());
+        when(medicoClient.obtenerMedico(20L)).thenReturn(new Object());
+        when(horarioClient.obtenerHorario(30L)).thenReturn(new Object());
+        when(repository.existsByHorarioIdAndEstado(30L,"AGENDADA")).thenReturn(true);
+        assertThatThrownBy(() -> service.crear(req))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Ya existe una cita agendada para ese horario");
+        verify(horarioClient, never()).ocuparHorario(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test void actualizar_cuandoCitaNoExisteDebeLanzarCitaNotFoundException() {
+        CitaRequestDTO req = crearRequest(10L,20L,30L,"Control");
+        when(repository.findById(77L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.actualizar(77L, req))
+                .isInstanceOf(CitaNotFoundException.class)
+                .hasMessage("Cita con ID 77 no encontrada");
+        verify(repository, never()).save(any());
+    }
+
+    @Test void actualizar_cuandoCitaNoEstaAgendadaDebeLanzarRuntimeException() {
+        CitaRequestDTO req = crearRequest(10L,20L,30L,"Control");
+        Cita cancelada = crearCita(7L,10L,20L,30L,"Original","CANCELADA");
+        when(repository.findById(7L)).thenReturn(Optional.of(cancelada));
+        assertThatThrownBy(() -> service.actualizar(7L, req))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Solo se pueden actualizar citas en estado AGENDADA");
+        verify(repository, never()).save(any());
+    }
+
+    @Test void actualizar_conNuevoHorarioOcupadoDebeLanzarRuntimeException() {
+        CitaRequestDTO req = crearRequest(10L,20L,40L,"Nuevo");
+        Cita existente = crearCita(7L,10L,20L,30L,"Original","AGENDADA");
+        when(repository.findById(7L)).thenReturn(Optional.of(existente));
+        when(pacienteClient.obtenerPaciente(10L)).thenReturn(new Object());
+        when(medicoClient.obtenerMedico(20L)).thenReturn(new Object());
+        when(horarioClient.obtenerHorario(40L)).thenReturn(new Object());
+        when(repository.existsByHorarioIdAndEstado(40L,"AGENDADA")).thenReturn(true);
+        assertThatThrownBy(() -> service.actualizar(7L, req))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Ya existe una cita agendada para el nuevo horario");
+        verify(horarioClient, never()).liberarHorario(any());
+        verify(horarioClient, never()).ocuparHorario(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test void cancelar_cuandoCitaNoAgendadaDebeLanzarRuntimeException() {
+        Cita realizada = crearCita(8L,10L,20L,30L,"Control","REALIZADA");
+        when(repository.findById(8L)).thenReturn(Optional.of(realizada));
+        assertThatThrownBy(() -> service.cancelar(8L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Solo se pueden cancelar citas en estado AGENDADA");
+        verify(horarioClient, never()).liberarHorario(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test void realizar_cuandoCitaNoAgendadaDebeLanzarRuntimeException() {
+        Cita cancelada = crearCita(9L,10L,20L,30L,"Control","CANCELADA");
+        when(repository.findById(9L)).thenReturn(Optional.of(cancelada));
+        assertThatThrownBy(() -> service.realizar(9L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Solo se pueden realizar citas en estado AGENDADA");
+        verify(repository, never()).save(any());
+    }
+
+    @Test void eliminar_cuandoCitaNoExisteDebeLanzarCitaNotFoundException() {
+        when(repository.findById(88L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.eliminar(88L))
+                .isInstanceOf(CitaNotFoundException.class)
+                .hasMessage("Cita con ID 88 no encontrada");
+        verify(repository, never()).delete(any());
+    }
+}
 
