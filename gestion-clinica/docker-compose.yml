@@ -1,0 +1,356 @@
+services:
+  # ============================================================
+  # Infraestructura - MySQL
+  # ============================================================
+  mysql:
+    image: mysql:8.0
+    container_name: gestion-clinica-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_AUTH}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docs/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - gestion-clinica-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 240s
+
+  # ============================================================
+  # Infraestructura - Eureka Server
+  # ============================================================
+  eureka-server:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-eureka-server
+    restart: always
+    volumes:
+      - ./apps/eureka-server.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8761:8761"
+    networks:
+      - gestion-clinica-net
+
+  # ============================================================
+  # Microservicios raíz
+  # ============================================================
+  ms-auth:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-auth
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    volumes:
+      - ./apps/ms-auth.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-especialidades:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-especialidades
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    volumes:
+      - ./apps/ms-especialidades.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ESPECIALIDADES}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-pacientes:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-pacientes
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-auth:
+        condition: service_started
+    volumes:
+      - ./apps/ms-pacientes.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_PACIENTES}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-medicos:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-medicos
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-auth:
+        condition: service_started
+      ms-especialidades:
+        condition: service_started
+    volumes:
+      - ./apps/ms-medicos.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_MEDICOS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  # ============================================================
+  # Microservicios dependientes
+  # ============================================================
+  ms-horarios:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-horarios
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-medicos:
+        condition: service_started
+    volumes:
+      - ./apps/ms-horarios.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_HORARIOS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-citas:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-citas
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-pacientes:
+        condition: service_started
+      ms-medicos:
+        condition: service_started
+      ms-horarios:
+        condition: service_started
+    volumes:
+      - ./apps/ms-citas.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_CITAS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-fichas-clinicas:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-fichas-clinicas
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-citas:
+        condition: service_started
+    volumes:
+      - ./apps/ms-fichas-clinicas.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_FICHAS_CLINICAS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-recetas:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-recetas
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-fichas-clinicas:
+        condition: service_started
+    volumes:
+      - ./apps/ms-recetas.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_RECETAS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-pagos:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-pagos
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-citas:
+        condition: service_started
+    volumes:
+      - ./apps/ms-pagos.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_PAGOS}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  ms-notificaciones:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-ms-notificaciones
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      ms-citas:
+        condition: service_started
+      ms-pacientes:
+        condition: service_started
+    volumes:
+      - ./apps/ms-notificaciones.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NOTIFICACIONES}?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+  # ============================================================
+  # Entrada principal - API Gateway
+  # ============================================================
+  api-gateway:
+    image: eclipse-temurin:21-jre
+    container_name: gestion-clinica-api-gateway
+    restart: always
+    depends_on:
+      eureka-server:
+        condition: service_started
+      ms-auth:
+        condition: service_started
+      ms-pacientes:
+        condition: service_started
+      ms-medicos:
+        condition: service_started
+      ms-especialidades:
+        condition: service_started
+      ms-horarios:
+        condition: service_started
+      ms-citas:
+        condition: service_started
+      ms-fichas-clinicas:
+        condition: service_started
+      ms-recetas:
+        condition: service_started
+      ms-pagos:
+        condition: service_started
+      ms-notificaciones:
+        condition: service_started
+    volumes:
+      - ./apps/api-gateway.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - gestion-clinica-net
+
+volumes:
+  mysql-data:
+
+networks:
+  gestion-clinica-net:
+    driver: bridge

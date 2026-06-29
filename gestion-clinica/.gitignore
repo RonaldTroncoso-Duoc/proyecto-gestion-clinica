@@ -1,0 +1,18 @@
+# Maven
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Distribución Docker: los JAR no deben subirse a GitHub
+apps/*.jar
+
+# Mantener la carpeta apps versionada
+!apps/.gitkeep

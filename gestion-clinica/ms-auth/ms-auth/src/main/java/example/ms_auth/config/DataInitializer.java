@@ -26,36 +26,81 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        RoleEntity adminRole = createRoleIfNotExists("ADMIN");
+        RoleEntity adminRole = createRoleIfNotExists(
+                "ADMIN",
+                "Administrador del sistema"
+        );
 
-        RoleEntity patientRole = createRoleIfNotExists("PATIENT");
+        RoleEntity patientRole = createRoleIfNotExists(
+                "PATIENT",
+                "Paciente de la clínica"
+        );
 
-        RoleEntity doctorRole = createRoleIfNotExists("DOCTOR");
+        RoleEntity doctorRole = createRoleIfNotExists(
+                "DOCTOR",
+                "Médico de la clínica"
+        );
 
         createUserIfNotExists(
                 "admin",
-                "admin@gmail.com",
+                "admin@clinicademo.cl",
                 "admin123",
                 adminRole
         );
 
         createUserIfNotExists(
-                "doctor",
-                "doctor@gmail.com",
-                "doctor123",
+                "paciente.camila",
+                "camila.torres@clinicademo.cl",
+                "paciente123",
+                patientRole
+        );
+
+        createUserIfNotExists(
+                "paciente.mario",
+                "mario.reyes@clinicademo.cl",
+                "paciente123",
+                patientRole
+        );
+
+        createUserIfNotExists(
+                "paciente.valentina",
+                "valentina.soto@clinicademo.cl",
+                "paciente123",
+                patientRole
+        );
+
+        createUserIfNotExists(
+                "medico.andrea",
+                "andrea.morales@clinicademo.cl",
+                "medico123",
+                doctorRole
+        );
+
+        createUserIfNotExists(
+                "medico.rodrigo",
+                "rodrigo.fuentes@clinicademo.cl",
+                "medico123",
+                doctorRole
+        );
+
+        createUserIfNotExists(
+                "medico.paula",
+                "paula.herrera@clinicademo.cl",
+                "medico123",
                 doctorRole
         );
 
         log.info("Datos iniciales verificados correctamente");
     }
 
-    private RoleEntity createRoleIfNotExists(String roleName) {
+    private RoleEntity createRoleIfNotExists(String roleName, String description) {
 
         return roleRepository.findByName(roleName)
                 .orElseGet(() -> {
 
                     RoleEntity role = RoleEntity.builder()
                             .name(roleName)
+                            .description(description)
                             .build();
 
                     log.info("Rol creado: {}", roleName);
@@ -71,25 +116,37 @@ public class DataInitializer implements CommandLineRunner {
             RoleEntity role
     ) {
 
-        boolean exists = userRepository.existsByUsername(username);
+        boolean usernameExists = userRepository.existsByUsername(username);
+        boolean emailExists = userRepository.existsByEmail(email);
 
-        if (!exists) {
-
-            UserEntity user = UserEntity.builder()
-                    .username(username)
-                    .email(email)
-                    .password(passwordEncoder.encode(password))
-                    .enabled(true)
-                    .roles(Set.of(role))
-                    .build();
-
-            userRepository.save(user);
-
-            log.info("Usuario creado: {}", username);
-
-        } else {
+        if (usernameExists) {
 
             log.info("Usuario ya existe: {}", username);
+
+            return;
         }
+
+        if (emailExists) {
+
+            log.warn(
+                    "Inconsistencia de datos semilla: el email {} ya existe pero el username {} no existe. No se creará el usuario.",
+                    email,
+                    username
+            );
+
+            return;
+        }
+
+        UserEntity user = UserEntity.builder()
+                .username(username)
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .enabled(true)
+                .roles(Set.of(role))
+                .build();
+
+        userRepository.save(user);
+
+        log.info("Usuario creado: {}", username);
     }
 }
