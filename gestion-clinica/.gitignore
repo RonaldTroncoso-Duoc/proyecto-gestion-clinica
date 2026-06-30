@@ -42,7 +42,7 @@ target/
 # ============================================================
 # NO SUBIR A GIT: datos locales de bases de datos y respaldos
 # ============================================================
-backups/*
+backups/
 *.sql.bak
 *.dump
 *.db
@@ -57,10 +57,4 @@ data/db/
 # ============================================================
 # Distribución Docker: no subir JAR generados en apps/
 # ============================================================
-apps/*.jar
-
-# Mantener la carpeta apps versionada
-!apps/.gitkeep
-
-# Mantener la carpeta backups versionada sin respaldos
-!backups/.gitkeep
+apps/
