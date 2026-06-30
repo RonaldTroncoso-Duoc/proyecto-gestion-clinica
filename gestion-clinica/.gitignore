@@ -1,18 +1,66 @@
-# Maven
+# ============================================================
+# Maven / compilación
+# ============================================================
 target/
+**/target/
 
-# IntelliJ
+# ============================================================
+# IDEs
+# ============================================================
 .idea/
 *.iml
-
-# VS Code
 .vscode/
 
-# Logs
+# ============================================================
+# Logs y temporales
+# ============================================================
 *.log
+*.tmp
+*.temp
 
-# Distribución Docker: los JAR no deben subirse a GitHub
+# ============================================================
+# NO SUBIR A GIT: binarios, instaladores y empaquetados
+# ============================================================
+*.jar
+*.war
+*.ear
+*.exe
+*.msi
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# ============================================================
+# NO SUBIR A GIT: scripts ejecutables de entrega/operación
+# ============================================================
+*.bat
+*.sh
+
+# ============================================================
+# NO SUBIR A GIT: datos locales de bases de datos y respaldos
+# ============================================================
+backups/*
+*.sql.bak
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+mysql-data/
+mysql_data/
+db-data/
+data/mysql/
+data/db/
+
+# ============================================================
+# Distribución Docker: no subir JAR generados en apps/
+# ============================================================
 apps/*.jar
 
 # Mantener la carpeta apps versionada
 !apps/.gitkeep
+
+# Mantener la carpeta backups versionada sin respaldos
+!backups/.gitkeep
