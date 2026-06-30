@@ -25,7 +25,7 @@ https://drive.google.com/file/d/1WTJo4QfRSc7aanlhJLOe3OLd_ysnMWEH/view?usp=shari
 Enlace del video de defensa:
 
 ```text
-PENDIENTE: incorporar enlace del video de defensa aquí.
+https://youtu.be/Sftgso7cAM0?si=7k8TNg2tnd6kdOQt
 ```
 
 ---
