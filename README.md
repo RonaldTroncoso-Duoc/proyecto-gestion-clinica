@@ -1,5 +1,9 @@
 # Sistema Gestión Clínica — Entrega Final
 
+**Integrantes**
+Diana Romero
+Ronald Troncoso
+
 Proyecto académico basado en **arquitectura de microservicios con Spring Boot**, **Maven multi-módulo**, **Eureka Server**, **API Gateway**, **MySQL**, **Docker Compose**, **Swagger/OpenAPI** y pruebas unitarias con **JUnit 5 / Mockito**.
 
 ---
@@ -277,52 +281,7 @@ gestion-clinica/README-DESARROLLO.md
 
 ---
 
-## 9. Video de defensa
-
-Apartado rellenable para completar una vez finalizado el video.
-
-### Enlace del video
-
-```text
-PENDIENTE: agregar enlace final del video de defensa.
-```
-
-### Duración
-
-```text
-PENDIENTE: indicar duración final del video.
-```
-
-Referencia de evaluación:
-
-```text
-Duración ideal: 15 minutos.
-Duración máxima recomendada: 18 minutos.
-```
-
-### Subtítulos
-
-Indicar una de las siguientes opciones:
-
-```text
-PENDIENTE: el video incluye subtítulos integrados.
-```
-
-o:
-
-```text
-PENDIENTE: se adjunta archivo subtitulos-video.txt.
-```
-
-Archivo esperado en caso de usar subtítulos externos:
-
-```text
-subtitulos-video.txt
-```
-
----
-
-## 10. Resumen para evaluación
+## 9. Resumen para evaluación
 
 ```text
 El proyecto implementa una arquitectura de microservicios con Spring Boot.
